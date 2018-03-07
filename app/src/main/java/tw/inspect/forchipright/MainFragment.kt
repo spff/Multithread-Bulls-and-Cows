@@ -31,7 +31,8 @@ class MainFragment : Fragment(), AnkoLogger {
                     tag = i+1
                     text = (i+1).toString()
                     setTextColor(resources.getColor(R.color.text))
-                    width = 40
+                    width = 60
+                    textSize = 22f
                     gravity = Gravity.CENTER
                     buttonDrawable = null
                     setOnCheckedChangeListener({_, isChecked ->

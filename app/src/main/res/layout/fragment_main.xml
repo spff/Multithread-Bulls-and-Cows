@@ -24,12 +24,13 @@
         android:layout_height="wrap_content"
         android:minHeight="10dp"
         android:minWidth="70dp"
+        android:layout_marginEnd="20dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="@+id/button_main_start"
         app:layout_constraintEnd_toStartOf="@id/button_main_start"
-        app:layout_constraintHorizontal_bias="1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="1">
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent">
 
 
     </RadioGroup>
@@ -54,6 +55,7 @@
         app:layout_constraintBottom_toBottomOf="@id/guide_line_horizon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/radio_group_main_digits"
-        app:layout_constraintTop_toTopOf="@id/guide_line_horizon" />
+        app:layout_constraintTop_toTopOf="@id/guide_line_horizon"
+        app:layout_constraintHorizontal_bias="0"/>
 
 </android.support.constraint.ConstraintLayout>
