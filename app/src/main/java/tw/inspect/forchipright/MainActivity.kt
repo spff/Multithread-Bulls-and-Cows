@@ -10,7 +10,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
 
 
-        savedInstanceState?:fragmentManager.beginTransaction()
+        savedInstanceState ?: fragmentManager.beginTransaction()
                 .replace(R.id.for_fragment_main, MainFragment())
                 .commit()
     }
