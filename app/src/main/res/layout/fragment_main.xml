@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#353535">
+
+    <TextView
+        android:id="@+id/text_view_main_digits"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="digits"
+        android:textColor="#fc8a50"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@id/button_main_start"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@+id/radio_group_main_digits"
+        app:layout_constraintTop_toTopOf="@+id/button_main_start"
+        app:layout_constraintVertical_bias="0" />
+
+    <RadioGroup
+        android:id="@id/radio_group_main_digits"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="10dp"
+        android:minWidth="70dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@+id/button_main_start"
+        app:layout_constraintEnd_toStartOf="@id/button_main_start"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintVertical_bias="1">
+
+
+    </RadioGroup>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guide_line_horizon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.103" />
+
+    <Button
+        android:id="@id/button_main_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/background"
+        android:enabled="false"
+        android:padding="10dp"
+        android:text="Start"
+        android:textColor="@color/text"
+        android:textSize="28sp"
+        app:layout_constraintBottom_toBottomOf="@id/guide_line_horizon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/radio_group_main_digits"
+        app:layout_constraintTop_toTopOf="@id/guide_line_horizon" />
+
+</android.support.constraint.ConstraintLayout>
