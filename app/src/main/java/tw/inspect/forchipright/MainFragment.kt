@@ -19,6 +19,7 @@ import java.util.*
 
 
 const val POOL_SIZE = 10
+const val MULTI_THREAD = true
 
 class MainFragment : Fragment(), AnkoLogger {
 
@@ -330,8 +331,11 @@ class MainFragment : Fragment(), AnkoLogger {
         }
 
         if (digitCount > 8) {
-            //guessNumberLongMulti()
-            guessNumberLong()
+            if(MULTI_THREAD) {
+                guessNumberLongMulti()
+            } else {
+                guessNumberLong()
+            }
         } else {
             guessNumber()
         }
