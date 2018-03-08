@@ -131,7 +131,7 @@ class MainFragment : Fragment(), AnkoLogger {
                 val pair = gameServer.guess(guessList)
 
                 out(StringBuilder().apply {
-                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
                 }.toString())
@@ -221,7 +221,7 @@ class MainFragment : Fragment(), AnkoLogger {
                 val pair = gameServer.guess(guessList)
 
                 out(StringBuilder().apply {
-                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
                 }.toString())
@@ -291,7 +291,7 @@ class MainFragment : Fragment(), AnkoLogger {
                 val pair = gameServer.guess(guessList)
 
                 out(StringBuilder().apply {
-                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
                 }.toString())
