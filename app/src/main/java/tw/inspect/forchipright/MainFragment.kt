@@ -94,14 +94,17 @@ class MainFragment : Fragment(), AnkoLogger {
         val gameServer = GameServer(digitCount, ::out)
         var perEachStart = elapsedRealtime()
 
-        //takes about 12 sec for POOL_SIZE==10&&digitCount==10
+
+        //takes about 12 sec for POOL_SIZE==10&&digitCount==10 to genList()
+        //takes about 16 sec for POOL_SIZE==10&&digitCount==10 as overallTime
+        //takes about 9 sec for POOL_SIZE==10&&digitCount==9 as overallTime
         fun guessNumberLongMulti() {
-            val lists = List(POOL_SIZE, { mutableListOf<Long>() })
+            val bigMatchLists = MutableList(POOL_SIZE, { mutableListOf<Long>() })
 
             fun genList(usableNumbers: List<Int>, current: Long, threadNumber: Int) {
                 usableNumbers.forEach {
                     if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                        lists[threadNumber].add(current + it)
+                        bigMatchLists[threadNumber].add(current + it)
                     } else {
                         genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
                                 (current + it).shl(4), threadNumber)
@@ -109,22 +112,88 @@ class MainFragment : Fragment(), AnkoLogger {
                 }
             }
 
-            val threads = mutableListOf<Thread>()
+            val threads0 = mutableListOf<Thread>()
             (0 until POOL_SIZE).toList().forEach {
                 Thread {
                     genList((0 until POOL_SIZE).toMutableList().apply { remove(it) }.toList(),
                             it.toLong().shl(4), it)
-                }.apply { threads.add(this) }.start()
+                }.apply { threads0.add(this) }.start()
             }
 
-            threads.forEach { it.join() }
-            info { lists.map { it.size }.reduce { a, b -> a + b } }
+            threads0.forEach { it.join() }
+
+
+            //feed to gameServer.guess()
+            var guessList = (0 until digitCount).toList()
+
+            while (true) {
+                val pair = gameServer.guess(guessList)
+
+                out(StringBuilder().apply {
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("result: ${pair.first}A${pair.second}B, spent: ")
+                    append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
+                }.toString())
+                if (pair.first == digitCount) {
+                    return
+                } else {
+                    perEachStart = elapsedRealtime()
+                    val threads1 = mutableListOf<Thread>()
+
+
+                    (0 until POOL_SIZE).toList().forEach {
+                        Thread {
+                            if(bigMatchLists.isEmpty()){
+                                return@Thread
+                            }
+                            bigMatchLists[it] = bigMatchLists[it].filter {
+
+                                var a = 0
+                                var b = 0
+
+                                for (i in 0 until digitCount) {
+                                    when {
+                                        guessList[i] == it.ushr((digitCount - i - 1) * 4).and(15).toInt() -> a++
+                                        guessList.contains(it.ushr((digitCount - i - 1) * 4).and(15).toInt()) -> b++
+                                    }
+                                }
+                                a == pair.first && b == pair.second
+
+                            }.toMutableList()
+
+
+
+
+                        }.apply { threads1.add(this) }.start()
+                    }
+
+                    threads1.forEach { it.join() }
+
+
+                    //find the first non-empty list in big MatchLists and set the guessList to theList[0]
+                    var index = 0
+                    while (bigMatchLists[index].isEmpty()){
+                        index++
+                    }
+
+                    val newGuessList = mutableListOf<Int>()
+                    for (i in digitCount - 1 downTo 0) {
+
+                        newGuessList.add(bigMatchLists[index][0].ushr(i * 4).and(15).toInt())
+                    }
+                    guessList = newGuessList.toList()
+
+                }
+
+
+            }
+
 
         }
 
         //takes about 17 sec for POOL_SIZE==10&&digitCount==10 to genList()
-        //takes about 30 sec for POOL_SIZE==10&&digitCount==10 as overallTime
-        //takes about 20 sec for POOL_SIZE==10&&digitCount==10 as overallTime
+        //takes about 27 sec for POOL_SIZE==10&&digitCount==10 as overallTime
+        //takes about 16 sec for POOL_SIZE==10&&digitCount==9 as overallTime
         fun guessNumberLong() {
 
             //the table stores all possible answers corresponding to results
@@ -174,7 +243,6 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     }.toMutableList()
 
-                    info { bigMatchList }
 
                     val newGuessList = mutableListOf<Int>()
                     for (i in digitCount - 1 downTo 0) {
