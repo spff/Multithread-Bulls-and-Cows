@@ -3,6 +3,7 @@ package tw.inspect.forchipright
 import android.app.Fragment
 import android.graphics.Color
 import android.os.Bundle
+import android.os.SystemClock.elapsedRealtime
 import android.text.method.ScrollingMovementMethod
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.RadioButton
 import kotlinx.android.synthetic.main.fragment_main.*
 import org.jetbrains.anko.AnkoLogger
+import org.jetbrains.anko.info
 import org.jetbrains.anko.runOnUiThread
 import java.text.SimpleDateFormat
 import java.util.*
@@ -73,7 +75,7 @@ class MainFragment : Fragment(), AnkoLogger {
             timeZone = gregorianCalendar.timeZone
         }
 
-        val start = gregorianCalendar.timeInMillis
+        val overallStart = GregorianCalendar().timeInMillis
 
 
         fun out(string: String) {
@@ -88,55 +90,142 @@ class MainFragment : Fragment(), AnkoLogger {
 
         val gameServer = GameServer(digitCount)
 
+        //takes about 12 sec for POOL_SIZE==10&&digitCount==10
+        fun guessNumberLongMulti() {
+            val lists = List(POOL_SIZE, { mutableListOf<Long>() })
 
-        val isAOrB = mutableListOf<Int>()
-        lateinit var pairAB: Pair<Int, Int>
-
-        fun confirmNumbers() {
-            val notSure = (0 until POOL_SIZE).toMutableList()
-            val notANorB = mutableListOf<Int>()
-            var goodStart = -1
-
-            (0 until POOL_SIZE step digitCount).forEach {
-
-                gameServer.guess((it until it + digitCount).map { it % POOL_SIZE }.toList()).run {
-                    when {
-                        first + second == digitCount -> {
-                            (it until it + digitCount).forEach { isAOrB.add(it) }
-                            pairAB = Pair(first, second)
-                            return
-                        }
-                        first + second == 0 ->
-                            (it until it + digitCount).forEach { notSure.remove(it);notANorB.add(it) }
-
-                        first + second > digitCount / 2 ->
-                            goodStart = it
+            fun genList(usableNumbers: List<Int>, current: Long, threadNumber: Int) {
+                usableNumbers.forEach {
+                    if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
+                        lists[threadNumber].add(current + it)
+                    } else {
+                        genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
+                                (current + it).shl(4), threadNumber)
                     }
                 }
+            }
+
+            val threads = mutableListOf<Thread>()
+            (0 until POOL_SIZE).toList().forEach {
+                Thread {
+                    genList((0 until POOL_SIZE).toMutableList().apply { remove(it) }.toList(),
+                            it.toLong().shl(4), it)
+                }.apply { threads.add(this) }.start()
+            }
+
+            threads.forEach { it.join() }
+            info { lists.map { it.size }.reduce { a, b -> a + b } }
+
+        }
+
+        //takes about 17 sec for POOL_SIZE==10&&digitCount==10
+        fun guessNumberLong() {
+            val list = mutableListOf<Long>()
+
+            fun genList(usableNumbers: List<Long>, current: Long) {
+                usableNumbers.forEach {
+                    if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
+                        list.add(current + it)
+                    } else {
+                        genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
+                                (current + it).shl(4))
+                    }
+                }
+            }
+            genList((0 until POOL_SIZE.toLong()).toList(), 0)
+
+            info { list.size }
+        }
+
+        fun guessNumber() {
+            //the table stores every possible answer
+            val bigMatchList :MutableList<Int> by lazy {
+                mutableListOf<Int>().apply {
+
+                    fun genList(usableNumbers: List<Int>, current: Int) {
+                        usableNumbers.forEach {
+                            if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
+                                this.add(current + it)
+                            } else {
+                                genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
+                                        (current + it).shl(4))
+                            }
+                        }
+                    }
+                    genList((0 until POOL_SIZE).toList(), 0)
+
+                    info { size }
+                }
+            }
+
+            //feed to gameServer.guess()
+            var guessList = (0 until digitCount).toList()
+
+            var oneTimeStart = elapsedRealtime()
+
+            while (true) loop@ {
+                gameServer.guess(guessList).apply {
+
+                    out(StringBuilder().apply {
+                        append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                        append("result: ${first}A${second}B, spent: ")
+                        append("${(elapsedRealtime() - oneTimeStart) / 1000.0} sec")
+                    }.toString())
+                    if (first == digitCount) {
+                        return@loop
+                    } else {
+                        oneTimeStart = elapsedRealtime()
+                        bigMatchList.forEach {
+
+                            var a = 0
+                            var b = 0
+
+                            for (i in 0 until digitCount) {
+                                when {
+                                    guessList[i] == bigMatchList[0].and(15.shl(i)) -> a++
+                                    guessList.contains(bigMatchList[0].and(15.shl(i))) -> b++
+                                }
+                            }
+                            if (!(a == first && b == second)) {
+                                bigMatchList.remove(it)
+                            }
+
+                        }
+
+                        guessList = mutableListOf<Int>().apply {
+                            for (i in digitCount - 1 downTo 0) {
+                                this.add(bigMatchList[0].and(15.shl(i)))
+                            }
+                        }.toList()
+                    }
+
+                }
+
             }
 
 
         }
 
-        fun permute() {
-
+        out("start time: ${simpleDateFormat.format(overallStart)}")
+        if (digitCount > 8) {
+            guessNumberLongMulti()
+            //guessNumberLong()
+        } else {
+            guessNumber()
         }
-
-        out("start time: ${simpleDateFormat.format(start)}")
-        confirmNumbers()
-        permute()
-        val stop = gregorianCalendar.timeInMillis
+        val overallStop = GregorianCalendar().timeInMillis
         out(StringBuilder().apply {
             append("guess ${gameServer.count} time${if (gameServer.count > 1) {
                 "s"
             } else {
                 ""
             }}, overall time")
-            append(" : ${(stop - start) / 1000.0} sec,")
-            append("end time : ${simpleDateFormat.format(stop)}")
+            append(" : ${(overallStop - overallStart) / 1000.0} sec,")
+            append("end time : ${simpleDateFormat.format(overallStop)}")
         }.toString())
 
     }
+
 
     class GameServer(private val digitCount: Int) {
 
