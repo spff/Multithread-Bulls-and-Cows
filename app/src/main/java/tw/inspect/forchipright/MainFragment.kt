@@ -92,6 +92,7 @@ class MainFragment : Fragment(), AnkoLogger {
 
         out("start time: ${simpleDateFormat.format(overallStart)}")
         val gameServer = GameServer(digitCount, ::out)
+        var perEachStart = elapsedRealtime()
 
         //takes about 12 sec for POOL_SIZE==10&&digitCount==10
         fun guessNumberLongMulti() {
@@ -121,14 +122,19 @@ class MainFragment : Fragment(), AnkoLogger {
 
         }
 
-        //takes about 17 sec for POOL_SIZE==10&&digitCount==10
+        //takes about 17 sec for POOL_SIZE==10&&digitCount==10 to genList()
+        //takes about 30 sec for POOL_SIZE==10&&digitCount==10 as overallTime
+        //takes about 20 sec for POOL_SIZE==10&&digitCount==10 as overallTime
         fun guessNumberLong() {
-            val list = mutableListOf<Long>()
+
+            //the table stores all possible answers corresponding to results
+            var bigMatchList = mutableListOf<Long>()
+
 
             fun genList(usableNumbers: List<Long>, current: Long) {
                 usableNumbers.forEach {
                     if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                        list.add(current + it)
+                        bigMatchList.add(current + it)
                     } else {
                         genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
                                 (current + it).shl(4))
@@ -137,7 +143,49 @@ class MainFragment : Fragment(), AnkoLogger {
             }
             genList((0 until POOL_SIZE.toLong()).toList(), 0)
 
-            info { list.size }
+
+            //feed to gameServer.guess()
+            var guessList = (0 until digitCount).toList()
+
+            while (true) {
+                val pair = gameServer.guess(guessList)
+
+                out(StringBuilder().apply {
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("result: ${pair.first}A${pair.second}B, spent: ")
+                    append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
+                }.toString())
+                if (pair.first == digitCount) {
+                    return
+                } else {
+                    perEachStart = elapsedRealtime()
+                    bigMatchList = bigMatchList.filter {
+
+                        var a = 0
+                        var b = 0
+
+                        for (i in 0 until digitCount) {
+                            when {
+                                guessList[i] == it.ushr((digitCount - i - 1) * 4).and(15).toInt() -> a++
+                                guessList.contains(it.ushr((digitCount - i - 1) * 4).and(15).toInt()) -> b++
+                            }
+                        }
+                        a == pair.first && b == pair.second
+
+                    }.toMutableList()
+
+                    info { bigMatchList }
+
+                    val newGuessList = mutableListOf<Int>()
+                    for (i in digitCount - 1 downTo 0) {
+
+                        newGuessList.add(bigMatchList[0].ushr(i * 4).and(15).toInt())
+                    }
+                    guessList = newGuessList.toList()
+                }
+
+
+            }
         }
 
         /**for digitCount <= 8, we use a 32-bit Int to store one guess
@@ -149,8 +197,6 @@ class MainFragment : Fragment(), AnkoLogger {
          *
          * */
         fun guessNumber() {
-
-            var perEachStart = elapsedRealtime()
 
             //the table stores all possible answers corresponding to results
             var bigMatchList = mutableListOf<Int>()
@@ -216,8 +262,8 @@ class MainFragment : Fragment(), AnkoLogger {
         }
 
         if (digitCount > 8) {
-            guessNumberLongMulti()
-            //guessNumberLong()
+            //guessNumberLongMulti()
+            guessNumberLong()
         } else {
             guessNumber()
         }
