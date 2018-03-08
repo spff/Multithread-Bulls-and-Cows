@@ -52,16 +52,18 @@ class MainFragment : Fragment(), AnkoLogger {
             }
 
             check(getChildAt(0).id)
-            setOnCheckedChangeListener({ _, checkedId ->
-                button_main_start.isEnabled = (checkedId != -1)
-            })
+
         }
 
         button_main_start.setOnClickListener({
+            it.isEnabled = false
+            text_view_main_output.text = ""
             Thread {
                 startJob(view!!.findViewById<RadioButton>(
                         radio_group_main_digits.checkedRadioButtonId).tag as Int)
             }.start()
+
+
         })
 
         text_view_main_output.movementMethod = ScrollingMovementMethod()
@@ -85,10 +87,11 @@ class MainFragment : Fragment(), AnkoLogger {
                     append("\n")
                 }
             }
+            info { string }
         }
 
-
-        val gameServer = GameServer(digitCount)
+        out("start time: ${simpleDateFormat.format(overallStart)}")
+        val gameServer = GameServer(digitCount, ::out)
 
         //takes about 12 sec for POOL_SIZE==10&&digitCount==10
         fun guessNumberLongMulti() {
@@ -137,76 +140,81 @@ class MainFragment : Fragment(), AnkoLogger {
             info { list.size }
         }
 
+        /**for digitCount <= 8, we use a 32-bit Int to store one guess
+         *
+         * for example
+         *
+         * [2,3,4,5] will be
+         * 0x0 0x0 0x0 0x0 0x2 0x3 0x4 0x5
+         *
+         * */
         fun guessNumber() {
-            //the table stores every possible answer
-            val bigMatchList :MutableList<Int> by lazy {
-                mutableListOf<Int>().apply {
 
-                    fun genList(usableNumbers: List<Int>, current: Int) {
-                        usableNumbers.forEach {
-                            if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                                this.add(current + it)
-                            } else {
-                                genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
-                                        (current + it).shl(4))
-                            }
-                        }
+            var perEachStart = elapsedRealtime()
+
+            //the table stores all possible answers corresponding to results
+            var bigMatchList = mutableListOf<Int>()
+
+
+            fun genList(usableNumbers: List<Int>, current: Int) {
+                usableNumbers.forEach {
+                    if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
+                        bigMatchList.add(current + it)
+                    } else {
+                        genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
+                                (current + it).shl(4))
                     }
-                    genList((0 until POOL_SIZE).toList(), 0)
-
-                    info { size }
                 }
             }
+            genList((0 until POOL_SIZE).toList(), 0)
+
 
             //feed to gameServer.guess()
             var guessList = (0 until digitCount).toList()
 
-            var oneTimeStart = elapsedRealtime()
+            while (true) {
+                val pair = gameServer.guess(guessList)
 
-            while (true) loop@ {
-                gameServer.guess(guessList).apply {
+                out(StringBuilder().apply {
+                    append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
+                    append("result: ${pair.first}A${pair.second}B, spent: ")
+                    append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
+                }.toString())
+                if (pair.first == digitCount) {
+                    return
+                } else {
+                    perEachStart = elapsedRealtime()
+                    bigMatchList = bigMatchList.filter {
 
-                    out(StringBuilder().apply {
-                        append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }},")
-                        append("result: ${first}A${second}B, spent: ")
-                        append("${(elapsedRealtime() - oneTimeStart) / 1000.0} sec")
-                    }.toString())
-                    if (first == digitCount) {
-                        return@loop
-                    } else {
-                        oneTimeStart = elapsedRealtime()
-                        bigMatchList.forEach {
+                        var a = 0
+                        var b = 0
 
-                            var a = 0
-                            var b = 0
-
-                            for (i in 0 until digitCount) {
-                                when {
-                                    guessList[i] == bigMatchList[0].and(15.shl(i)) -> a++
-                                    guessList.contains(bigMatchList[0].and(15.shl(i))) -> b++
-                                }
+                        for (i in 0 until digitCount) {
+                            when {
+                                guessList[i] == it.ushr((digitCount - i - 1) * 4).and(15) -> a++
+                                guessList.contains(it.ushr((digitCount - i - 1) * 4).and(15)) -> b++
                             }
-                            if (!(a == first && b == second)) {
-                                bigMatchList.remove(it)
-                            }
-
                         }
+                        a == pair.first && b == pair.second
 
-                        guessList = mutableListOf<Int>().apply {
-                            for (i in digitCount - 1 downTo 0) {
-                                this.add(bigMatchList[0].and(15.shl(i)))
-                            }
-                        }.toList()
+                    }.toMutableList()
+
+                    info { bigMatchList }
+
+                    val newGuessList = mutableListOf<Int>()
+                    for (i in digitCount - 1 downTo 0) {
+
+                        newGuessList.add(bigMatchList[0].ushr(i * 4).and(15))
                     }
-
+                    guessList = newGuessList.toList()
                 }
+
 
             }
 
 
         }
 
-        out("start time: ${simpleDateFormat.format(overallStart)}")
         if (digitCount > 8) {
             guessNumberLongMulti()
             //guessNumberLong()
@@ -220,14 +228,18 @@ class MainFragment : Fragment(), AnkoLogger {
             } else {
                 ""
             }}, overall time")
-            append(" : ${(overallStop - overallStart) / 1000.0} sec,")
+            append(" : ${(overallStop - overallStart) / 1000.0} sec, ")
             append("end time : ${simpleDateFormat.format(overallStop)}")
         }.toString())
+
+        runOnUiThread {
+            button_main_start.isEnabled = true
+        }
 
     }
 
 
-    class GameServer(private val digitCount: Int) {
+    class GameServer(private val digitCount: Int, outputter: (String) -> Unit) {
 
         private val mutableList = mutableListOf<Int>()
         var count = 0
@@ -243,9 +255,18 @@ class MainFragment : Fragment(), AnkoLogger {
             for (i in 0 until digitCount) {
                 Random().nextInt(pool.size).apply {
                     mutableList.add(pool[this])
-                    pool.remove(this)
+                    pool.removeAt(this)
                 }
 
+            }
+
+            StringBuilder().apply {
+                append("THE Number = ")
+                mutableList.forEach {
+                    append(it)
+                }
+
+                outputter(toString())
             }
 
         }
