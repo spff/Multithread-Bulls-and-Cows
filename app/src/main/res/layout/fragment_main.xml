@@ -46,16 +46,66 @@
         android:id="@id/button_main_start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/background"
+        android:background="@drawable/my_button_background"
         android:padding="10dp"
         android:text="Start"
-        android:textColor="@color/text"
+        android:textColor="@drawable/my_text_color"
         android:textSize="28sp"
         app:layout_constraintBottom_toBottomOf="@id/guide_line_horizon"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toEndOf="@id/radio_group_main_digits"
         app:layout_constraintTop_toTopOf="@id/guide_line_horizon" />
+
+    <ToggleButton
+        android:id="@+id/toggle_main_multi_thread_when_long"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOn=""
+        android:textOff=""
+        android:visibility="gone"
+        android:background="@drawable/my_toggle_background"
+        />
+
+    <TextView
+        android:id="@+id/switch_main_multi_thread_when_long"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/multi_thread_when_long"
+        android:textColor="@color/text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_main_start"
+        app:layout_constraintVertical_bias="0" />
+
+    <TextView
+        android:id="@+id/switch_main_better_guess_when_int"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/better_guess_when_int"
+        android:textColor="@color/text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_main_multi_thread_when_long"
+        app:layout_constraintVertical_bias="0" />
+
+    <TextView
+        android:id="@+id/switch_main_multi_thread_in_guessing_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/multi_thread_in_guessing_next"
+        android:textColor="@color/text"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_main_better_guess_when_int"
+        app:layout_constraintVertical_bias="0" />
+
 
     <TextView
         android:id="@+id/text_view_main_output"
@@ -71,6 +121,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_main_start" />
+        app:layout_constraintTop_toBottomOf="@id/switch_main_multi_thread_in_guessing_next" />
 
 </android.support.constraint.ConstraintLayout>

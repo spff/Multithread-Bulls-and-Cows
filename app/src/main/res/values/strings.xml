@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">ForChipRight</string>
+    <string name="multi_thread_when_long">multithread in updating candidate list(for digits 9~10)</string>
+    <string name="better_guess_when_int">better guess(do some calculation instead of picking the first in the candidate list for digits 1~8)</string>
+    <string name="multi_thread_in_guessing_next">multithread in guessing next from the updated candidate list</string>
+
 
 </resources>

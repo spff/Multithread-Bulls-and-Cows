@@ -44,7 +44,7 @@ class MainFragment : Fragment(), AnkoLogger {
                     buttonDrawable = null
                     setOnCheckedChangeListener({ _, isChecked ->
                         if (isChecked) {
-                            setBackgroundColor(resources.getColor(R.color.background))
+                            setBackgroundColor(resources.getColor(R.color.background_enabled))
                         } else {
                             setBackgroundColor(Color.TRANSPARENT)
                         }
@@ -72,7 +72,24 @@ class MainFragment : Fragment(), AnkoLogger {
 
     }
 
-
+    /**
+     * 1. Start GameServer
+     *
+     * 1.1. determine which function to call based on "digits"
+     * 1.1.2 If digits > 8 determine whether to do in multi-thread up to user's choice
+     *
+     * 2. Generate candidateList which store all possible permute
+     * 3. Guess 0123 or whatever, doesn't matter
+     * 4. Get the result, if correct, end.
+     * 5. Update the candidateList
+     * 6. Determine next guess(might either choose the first or via betterGuess
+     *    from the candidateList depends on user's choice)
+     *
+     * 6.1. If betterGuess is chosen, determine whether to do in multi-thread, and how DEEP to guess
+     *
+     * 7. Guess, and loop back to step 4.
+     *
+     * */
     private fun startJob(digitCount: Int) {
 
         val gregorianCalendar = GregorianCalendar()
@@ -134,15 +151,22 @@ class MainFragment : Fragment(), AnkoLogger {
                         }
 
                     }
+
+                    info {distributedMap}
+
                 }.values.filter { it > 0 }.size.apply {
+                    info { "$this $max $pretendedResponse" }
+
                     when{
                         this > max -> {
-                            max = pretendedResponse
+                            max = this
                             candidate.clear()
                             candidate.add(pretendedResponse)
                         }
                         this == max -> candidate.add(pretendedResponse)
                     }
+
+                    info{ candidate }
 
                 }
             }
@@ -165,12 +189,12 @@ class MainFragment : Fragment(), AnkoLogger {
         //takes about 16 sec for POOL_SIZE==10&&digitCount==10 as overallTime
         //takes about 9 sec for POOL_SIZE==10&&digitCount==9 as overallTime
         fun guessNumberLongMulti() {
-            val bigMatchLists = MutableList(POOL_SIZE, { mutableListOf<Long>() })
+            val candidateLists = MutableList(POOL_SIZE, { mutableListOf<Long>() })
 
             fun genList(usableNumbers: List<Int>, current: Long, threadNumber: Int) {
                 usableNumbers.forEach {
                     if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                        bigMatchLists[threadNumber].add(current + it)
+                        candidateLists[threadNumber].add(current + it)
                     } else {
                         genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
                                 (current + it).shl(4), threadNumber)
@@ -209,10 +233,10 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     (0 until POOL_SIZE).toList().forEach {
                         Thread {
-                            if (bigMatchLists.isEmpty()) {
+                            if (candidateLists.isEmpty()) {
                                 return@Thread
                             }
-                            bigMatchLists[it] = bigMatchLists[it].filter {
+                            candidateLists[it] = candidateLists[it].filter {
 
                                 var a = 0
                                 var b = 0
@@ -234,13 +258,13 @@ class MainFragment : Fragment(), AnkoLogger {
                     threads1.forEach { it.join() }
 
 
-                    //find the first non-empty list in big MatchLists and set the guessList to theList[0]
+                    //find the first non-empty list in candidateLists and set the guessList to theList[0]
                     var index = 0
-                    while (bigMatchLists[index].isEmpty()) {
+                    while (candidateLists[index].isEmpty()) {
                         index++
                     }
 
-                    guessList = bigMatchLists[index][0].toList()
+                    guessList = candidateLists[index][0].toList()
 
                 }
 
@@ -256,12 +280,12 @@ class MainFragment : Fragment(), AnkoLogger {
         fun guessNumberLong() {
 
             //the table stores all possible answers corresponding to results
-            var bigMatchList = mutableListOf<Long>()
+            var candidateList = mutableListOf<Long>()
 
             fun genList(usableNumbers: List<Long>, current: Long) {
                 usableNumbers.forEach {
                     if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                        bigMatchList.add(current + it)
+                        candidateList.add(current + it)
                     } else {
                         genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
                                 (current + it).shl(4))
@@ -286,7 +310,7 @@ class MainFragment : Fragment(), AnkoLogger {
                     return
                 } else {
                     perEachStart = elapsedRealtime()
-                    bigMatchList = bigMatchList.filter {
+                    candidateList = candidateList.filter {
 
                         var a = 0
                         var b = 0
@@ -302,7 +326,7 @@ class MainFragment : Fragment(), AnkoLogger {
                     }.toMutableList()
 
 
-                    guessList = bigMatchList[0].toList()
+                    guessList = candidateList[0].toList()
                 }
 
 
@@ -320,12 +344,12 @@ class MainFragment : Fragment(), AnkoLogger {
         fun guessNumber() {
 
             //the table stores all possible answers corresponding to results
-            var bigMatchList = mutableListOf<Int>()
+            var candidateList = mutableListOf<Int>()
 
             fun genList(usableNumbers: List<Int>, current: Int) {
                 usableNumbers.forEach {
                     if (POOL_SIZE - usableNumbers.size == digitCount - 1) {
-                        bigMatchList.add(current + it)
+                        candidateList.add(current + it)
                     } else {
                         genList(usableNumbers.toMutableList().apply { remove(it) }.toList(),
                                 (current + it).shl(4))
@@ -350,7 +374,7 @@ class MainFragment : Fragment(), AnkoLogger {
                     return
                 } else {
                     perEachStart = elapsedRealtime()
-                    bigMatchList = bigMatchList.filter {
+                    candidateList = candidateList.filter {
 
                         var a = 0
                         var b = 0
@@ -365,12 +389,12 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     }.toMutableList()
 
-                    info { bigMatchList }
+                    info { candidateList }
 
                     guessList = if (BETTER_GUESS_WHEN_INT) {
-                        betterGuess(bigMatchList)
+                        betterGuess(candidateList)
                     } else {
-                        bigMatchList[0]
+                        candidateList[0]
                     }.toList()
                 }
 

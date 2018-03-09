@@ -4,6 +4,9 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="background">#25FFFFFF</color>
+    <color name="background_enabled">#25FFFFFF</color>
+    <color name="background_disabled">#15FFFFFF</color>
+
     <color name="text">#FC8A50</color>
+    <color name="text_disabled">#736762</color>
 </resources>
