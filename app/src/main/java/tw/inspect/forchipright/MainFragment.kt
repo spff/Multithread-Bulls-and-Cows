@@ -76,7 +76,7 @@ class MainFragment : Fragment(), AnkoLogger {
      * 1. Start GameServer
      *
      * 1.1. determine which function to call based on "digits"
-     * 1.1.2 If digits > 8 determine whether to do in multi-thread up to user's choice
+     * 1.1.1 If digits > 8 determine whether to do in multi-thread up to user's choice
      *
      * 2. Generate candidateList which store all possible permute
      * 3. Guess 0123 or whatever, doesn't matter
