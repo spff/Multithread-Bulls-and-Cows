@@ -64,9 +64,9 @@
         android:textOn=""
         android:textOff=""
         android:visibility="gone"
-        android:background="@drawable/my_toggle_background"
-        />
 
+        />
+    <!--android:background="@drawable/my_toggle_background"-->
     <TextView
         android:id="@+id/switch_main_multi_thread_when_long"
         android:layout_width="wrap_content"
@@ -99,6 +99,7 @@
         android:layout_height="wrap_content"
         android:text="@string/multi_thread_in_guessing_next"
         android:textColor="@color/text"
+        android:layout_marginStart="20dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,6 +107,12 @@
         app:layout_constraintTop_toBottomOf="@id/switch_main_better_guess_when_int"
         app:layout_constraintVertical_bias="0" />
 
+    <SeekBar
+        android:id="@+id/seek_bar_main_depth"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="not yet implemented"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/text_view_main_output"
