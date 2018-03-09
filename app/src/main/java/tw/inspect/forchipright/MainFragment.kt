@@ -20,6 +20,7 @@ import java.util.*
 
 const val POOL_SIZE = 10
 const val MULTI_THREAD_WHEN_LONG = true
+const val BETTER_GUESS_WHEN_INT = true
 
 class MainFragment : Fragment(), AnkoLogger {
 
@@ -71,6 +72,7 @@ class MainFragment : Fragment(), AnkoLogger {
 
     }
 
+
     private fun startJob(digitCount: Int) {
 
         val gregorianCalendar = GregorianCalendar()
@@ -91,7 +93,7 @@ class MainFragment : Fragment(), AnkoLogger {
             info { string }
         }
 
-        fun Long.toList(): List<Int>{
+        fun Long.toList(): List<Int> {
             val newGuessList = mutableListOf<Int>()
             for (i in digitCount - 1 downTo 0) {
                 newGuessList.add(ushr(i * 4).and(15).toInt())
@@ -99,13 +101,60 @@ class MainFragment : Fragment(), AnkoLogger {
             return newGuessList.toList()
         }
 
-        fun Int.toList(): List<Int>{
+        fun Int.toList(): List<Int> {
             val newGuessList = mutableListOf<Int>()
             for (i in digitCount - 1 downTo 0) {
                 newGuessList.add(ushr(i * 4).and(15))
             }
             return newGuessList.toList()
         }
+
+
+        fun betterGuess(matchList: List<Int>): Int {
+
+            var max = 0
+            val candidate = mutableListOf<Int>()
+
+            matchList.forEach { pretendedResponse ->
+                mutableMapOf<Pair<Int, Int>, Int>().also { distributedMap ->
+                    matchList.forEach {
+                        var a = 0
+                        var b = 0
+                        val list = pretendedResponse.toList()
+                        for (i in 0 until digitCount) {
+                            when {
+                                list[i] == it.ushr((digitCount - i - 1) * 4).and(15) -> a++
+                                list.contains(it.ushr((digitCount - i - 1) * 4).and(15)) -> b++
+                            }
+                        }
+                        distributedMap.apply {
+                            Pair(a, b).also {
+                                put(it, getOrDefault(it, 0) + 1)
+                            }
+                        }
+
+                    }
+                }.values.filter { it > 0 }.size.apply {
+                    when{
+                        this > max -> {
+                            max = pretendedResponse
+                            candidate.clear()
+                            candidate.add(pretendedResponse)
+                        }
+                        this == max -> candidate.add(pretendedResponse)
+                    }
+
+                }
+            }
+
+            //return the first element which may lead to most kinds of result
+            return candidate[0]
+        }
+
+
+
+
+
 
         out("start time: ${simpleDateFormat.format(overallStart)}")
         val gameServer = GameServer(digitCount, ::out)
@@ -160,7 +209,7 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     (0 until POOL_SIZE).toList().forEach {
                         Thread {
-                            if(bigMatchLists.isEmpty()){
+                            if (bigMatchLists.isEmpty()) {
                                 return@Thread
                             }
                             bigMatchLists[it] = bigMatchLists[it].filter {
@@ -179,8 +228,6 @@ class MainFragment : Fragment(), AnkoLogger {
                             }.toMutableList()
 
 
-
-
                         }.apply { threads1.add(this) }.start()
                     }
 
@@ -189,7 +236,7 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     //find the first non-empty list in big MatchLists and set the guessList to theList[0]
                     var index = 0
-                    while (bigMatchLists[index].isEmpty()){
+                    while (bigMatchLists[index].isEmpty()) {
                         index++
                     }
 
@@ -320,7 +367,11 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     info { bigMatchList }
 
-                    guessList = bigMatchList[0].toList()
+                    guessList = if (BETTER_GUESS_WHEN_INT) {
+                        betterGuess(bigMatchList)
+                    } else {
+                        bigMatchList[0]
+                    }.toList()
                 }
 
 
@@ -330,7 +381,7 @@ class MainFragment : Fragment(), AnkoLogger {
         }
 
         if (digitCount > 8) {
-            if(MULTI_THREAD_WHEN_LONG) {
+            if (MULTI_THREAD_WHEN_LONG) {
                 guessNumberLongMulti()
             } else {
                 guessNumberLong()
