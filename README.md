@@ -13,8 +13,8 @@ auto solve
 3. Guess 0123 or whatever, doesn't matter  
 4. Get the result, if correct, end.  
 5. Update the candidateList  
-6. Determine next guess(might either choose the first or via betterGuess  
-    from the candidateList depends on user's choice)  
+6. Determine next guess(might either choose the first or via betterGuess  
+   from the candidateList depends on user's choice)  
 
 >6.1. If betterGuess is chosen, determine whether to do in multi-thread, and how DEEP to guess  
       when there are multiple choices with the same VALUE(See the document below for detail)  
@@ -42,18 +42,18 @@ auto solve
  ### The strategy is
 
  Whenever the Secret is, we should choose the one which may get the most  
- Kinds of Different Possible Responses (Discrete Degree relative to 0) so we may   
+ Kinds of Different Possible Responses (Discrete Degree relative to 0) so we may  
  AVERAGELY eliminate most impossible candidates from the next response.  
 
  To do so, we're using a nested loop, the outer stands for Next Guess, the inner stands  
- for if it is the Secret and what might the response according to Next Guess be. after  
+ for if it is the Secret and what might the response according to Next Guess be. after  
  doing statistic for all Next Guesses, we get the best Next Guess(es)  
 
  Now digit = 2, the possible responses = 3*2 = 6, and pretend after the previous guess,  
- after updating candidateList (via removing the impossible candidates), and we got   
+ after updating candidateList (via removing the impossible candidates), and we got
  6 candidates left.     
- We'd better choose the one, which Possible Kinds of Different Responses is 6, so after 
- next response, we can remove the other candidates which might give either of the other 5  
+ We'd better choose the one, which Possible Kinds of Different Responses is 6, so after  
+ next response, we can remove the other candidates which might give either of the other 5  
  responses according to the one we just chose to guess.  
 
  ### More practical explanation
