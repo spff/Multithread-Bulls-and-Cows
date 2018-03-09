@@ -19,7 +19,7 @@ import java.util.*
 
 
 const val POOL_SIZE = 10
-const val MULTI_THREAD = true
+const val MULTI_THREAD_WHEN_LONG = true
 
 class MainFragment : Fragment(), AnkoLogger {
 
@@ -89,6 +89,22 @@ class MainFragment : Fragment(), AnkoLogger {
                 }
             }
             info { string }
+        }
+
+        fun Long.toList(): List<Int>{
+            val newGuessList = mutableListOf<Int>()
+            for (i in digitCount - 1 downTo 0) {
+                newGuessList.add(ushr(i * 4).and(15).toInt())
+            }
+            return newGuessList.toList()
+        }
+
+        fun Int.toList(): List<Int>{
+            val newGuessList = mutableListOf<Int>()
+            for (i in digitCount - 1 downTo 0) {
+                newGuessList.add(ushr(i * 4).and(15))
+            }
+            return newGuessList.toList()
         }
 
         out("start time: ${simpleDateFormat.format(overallStart)}")
@@ -177,12 +193,7 @@ class MainFragment : Fragment(), AnkoLogger {
                         index++
                     }
 
-                    val newGuessList = mutableListOf<Int>()
-                    for (i in digitCount - 1 downTo 0) {
-
-                        newGuessList.add(bigMatchLists[index][0].ushr(i * 4).and(15).toInt())
-                    }
-                    guessList = newGuessList.toList()
+                    guessList = bigMatchLists[index][0].toList()
 
                 }
 
@@ -199,7 +210,6 @@ class MainFragment : Fragment(), AnkoLogger {
 
             //the table stores all possible answers corresponding to results
             var bigMatchList = mutableListOf<Long>()
-
 
             fun genList(usableNumbers: List<Long>, current: Long) {
                 usableNumbers.forEach {
@@ -245,12 +255,7 @@ class MainFragment : Fragment(), AnkoLogger {
                     }.toMutableList()
 
 
-                    val newGuessList = mutableListOf<Int>()
-                    for (i in digitCount - 1 downTo 0) {
-
-                        newGuessList.add(bigMatchList[0].ushr(i * 4).and(15).toInt())
-                    }
-                    guessList = newGuessList.toList()
+                    guessList = bigMatchList[0].toList()
                 }
 
 
@@ -269,7 +274,6 @@ class MainFragment : Fragment(), AnkoLogger {
 
             //the table stores all possible answers corresponding to results
             var bigMatchList = mutableListOf<Int>()
-
 
             fun genList(usableNumbers: List<Int>, current: Int) {
                 usableNumbers.forEach {
@@ -316,12 +320,7 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     info { bigMatchList }
 
-                    val newGuessList = mutableListOf<Int>()
-                    for (i in digitCount - 1 downTo 0) {
-
-                        newGuessList.add(bigMatchList[0].ushr(i * 4).and(15))
-                    }
-                    guessList = newGuessList.toList()
+                    guessList = bigMatchList[0].toList()
                 }
 
 
@@ -331,7 +330,7 @@ class MainFragment : Fragment(), AnkoLogger {
         }
 
         if (digitCount > 8) {
-            if(MULTI_THREAD) {
+            if(MULTI_THREAD_WHEN_LONG) {
                 guessNumberLongMulti()
             } else {
                 guessNumberLong()
