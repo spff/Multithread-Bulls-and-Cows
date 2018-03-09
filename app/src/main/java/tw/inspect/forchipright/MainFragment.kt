@@ -144,8 +144,8 @@ class MainFragment : Fragment(), AnkoLogger {
          * The strategy is
          *
          * Whenever the Secret is, we should choose the one which may get the most
-         * Kinds of Different Possible Responses (Discrete Degree) so we may eliminate most
-         * impossible candidates from the next response.
+         * Kinds of Different Possible Responses (Discrete Degree relative to 0) so we may
+         * AVERAGELY eliminate most impossible candidates from the next response.
          *
          * To do so, we're using a nested loop, the outer stands for Next Guess, the inner stands
          * for if it is the Secret and what might the response according to Next Guess be. after
