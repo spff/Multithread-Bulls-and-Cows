@@ -4,7 +4,7 @@
             "outputFile": "C:\\Users\\spff\\AndroidStudioProjects\\ForChipRight\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values-v26\\values-v26.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\spff\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.1.0.aar\\02054fc09ed391672301e855c839a0a5\\res\\values-v26\\values-v26.xml",
+                    "source": "C:\\Users\\spff\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-27.1.0.aar\\3ca7d304f2688f4d55389d71e1244604\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,3,4,8,12,16",
                         "startColumns": "4,4,4,4,4,4",
@@ -23,7 +23,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\spff\\.gradle\\caches\\transforms-1\\files-1.1\\design-27.1.0.aar\\ea8b239dc1c6d0e66facd5dc351ee9f0\\res\\values-v26\\values-v26.xml",
+                    "source": "C:\\Users\\spff\\.gradle\\caches\\transforms-1\\files-1.1\\design-27.1.0.aar\\ace7b29c6693319f5e7e064a566c06aa\\res\\values-v26\\values-v26.xml",
                     "from": {
                         "startLines": "2,6",
                         "startColumns": "4,4",

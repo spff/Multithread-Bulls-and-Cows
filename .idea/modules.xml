@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ForChipRight.iml" filepath="$PROJECT_DIR$/ForChipRight.iml" />
+      <module fileurl="file://C:\Users\spff\AndroidStudioProjects\ForChipRight\ForChipRight.iml" filepath="C:\Users\spff\AndroidStudioProjects\ForChipRight\ForChipRight.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\spff\AndroidStudioProjects\ForChipRight\app\app.iml" filepath="C:\Users\spff\AndroidStudioProjects\ForChipRight\app\app.iml" />
     </modules>
   </component>
 </project>
