@@ -7,13 +7,15 @@ import java.util.*
  */
 
 
-class GameServer(private val digitCount: Int, out: (String) -> Unit) {
+class GameServer(private val digitCount: Int, private val out: (String) -> Unit):AbsGameServer(digitCount) {
 
-    private val mutableList = mutableListOf<Int>()
-    var count = 0
-        private set
+    override val secret = mutableListOf<Int>()
 
     init {
+        generateSecret()
+    }
+
+    override fun generateSecret() {
 
         //shorter, but it's O(n^2)
         //(1..9).shuffled().subList(0, digitCount)
@@ -22,7 +24,7 @@ class GameServer(private val digitCount: Int, out: (String) -> Unit) {
         val pool = (0..9).toMutableList()
         for (i in 0 until digitCount) {
             Random().nextInt(pool.size).apply {
-                mutableList.add(pool[this])
+                secret.add(pool[this])
                 pool.removeAt(this)
             }
 
@@ -30,28 +32,13 @@ class GameServer(private val digitCount: Int, out: (String) -> Unit) {
 
         StringBuilder().apply {
             append("THE Number = ")
-            mutableList.forEach {
+            secret.forEach {
                 append(it)
             }
 
             out(toString())
         }
 
-    }
-
-    fun guess(list: List<Int>): Pair<Int, Int> {
-        count++
-        var a = 0
-        var b = 0
-
-        list.forEachIndexed { index, it ->
-            when {
-                mutableList[index] == it -> a++
-                mutableList.contains(it) -> b++
-            }
-        }
-
-        return Pair(a, b)
     }
 
 }

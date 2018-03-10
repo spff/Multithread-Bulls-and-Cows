@@ -10,7 +10,7 @@ import java.util.*
  * Created by spff on 3/10/2018.
  */
 
-class GuessServer(private val gameServer: GameServer,
+class GuessServer(private val gameServer: AbsGameServer,
                   private val digitCount: Int,
                   private val out: (String) -> Unit,
                   private val guessFinish: () -> Unit) : AnkoLogger {
