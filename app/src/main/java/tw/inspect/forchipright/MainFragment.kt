@@ -219,7 +219,9 @@ class MainFragment : Fragment(), AnkoLogger {
             val bests = mutableListOf<Int>()
 
             //46341^2 will overflow
-            val mapLong = (candidateList.size > 46340)
+            //and the biggest case would be 0 ... + 1^2 + 46340^2
+            //so 46341 is OK but 46342 might not
+            val mapLong = (candidateList.size > 46341)
             info{ "mapLong $mapLong" }
 
             candidateList.forEach { nextGuess ->
