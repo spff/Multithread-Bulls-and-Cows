@@ -1,7 +1,8 @@
-# Ignore everything
-/build
 
-# Recursively allow files under subtree
-!/build/outputs/apk/**
-# You can be specific with these rules
-!.gitignore
+!build/
+
+build/*
+!build/outputs/
+
+build/outputs/*
+!build/outputs/apk/
