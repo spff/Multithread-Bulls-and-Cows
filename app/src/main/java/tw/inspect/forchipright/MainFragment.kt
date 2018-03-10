@@ -21,6 +21,7 @@ import java.util.*
 const val POOL_SIZE = 10
 const val MULTI_THREAD_WHEN_LONG = true
 const val BETTER_GUESS_WHEN_INT = true
+const val INTENSIVE = true
 
 class MainFragment : Fragment(), AnkoLogger {
 
@@ -32,10 +33,11 @@ class MainFragment : Fragment(), AnkoLogger {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+
         radio_group_main_digits.apply {
             for (i in 0 until POOL_SIZE) {
                 addView(RadioButton(context).apply {
-                    tag = i + 1
+                    tag = i
                     text = (i + 1).toString()
                     setTextColor(resources.getColor(R.color.text))
                     width = 60
@@ -53,22 +55,31 @@ class MainFragment : Fragment(), AnkoLogger {
                 })
             }
 
-            check(getChildAt(0).id)
+            check(getChildAt(savedInstanceState?.get("digits") as Int? ?: 0).id)
 
         }
+
 
         button_main_start.setOnClickListener({
             it.isEnabled = false
             text_view_main_output.text = ""
             Thread {
+
                 startJob(view!!.findViewById<RadioButton>(
-                        radio_group_main_digits.checkedRadioButtonId).tag as Int)
+                        radio_group_main_digits.checkedRadioButtonId).tag as Int + 1)
             }.start()
 
 
         })
 
         text_view_main_output.movementMethod = ScrollingMovementMethod()
+
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState!!.putInt("digits", view!!.findViewById<RadioButton>(
+                radio_group_main_digits.checkedRadioButtonId).tag as Int)
+        super.onSaveInstanceState(outState)
 
     }
 
@@ -191,9 +202,96 @@ class MainFragment : Fragment(), AnkoLogger {
          *
          * */
 
-        fun betterGuess(candidateList: List<Int>): Int {
+
+        /**
+         * This method sums square of number in each class as our Discrete Degree
+         *
+         * */
+
+
+
+
+        fun betterGuessIntensive(candidateList: List<Int>): Int {
 
             var min = Int.MAX_VALUE
+            var minLong = Long.MAX_VALUE
+
+            val bests = mutableListOf<Int>()
+
+            //46341^2 will overflow
+            val mapLong = (candidateList.size > 46340)
+            info{ "mapLong $mapLong" }
+
+            candidateList.forEach { nextGuess ->
+                mutableMapOf<Pair<Int, Int>, Int>().also { distributedMap ->
+                    candidateList.forEach {
+                        var a = 0
+                        var b = 0
+                        val list = nextGuess.toList()
+                        for (i in 0 until digitCount) {
+                            when {
+                                list[i] == it.ushr((digitCount - i - 1) * 4).and(15) -> a++
+                                list.contains(it.ushr((digitCount - i - 1) * 4).and(15)) -> b++
+                            }
+                        }
+                        distributedMap.apply {
+                            Pair(a, b).also {
+                                put(it, getOrDefault(it, 0) + 1)
+                            }
+                        }
+
+                    }
+
+
+                }.values.apply {
+                    if (mapLong) {
+                        map {
+                            it.toLong() * it
+                        }.reduce { a, b -> a + b }.apply {
+                            //info { "$this $minLong $nextGuess" }
+
+                            when {
+                                this < minLong -> {
+                                    minLong = this
+                                    bests.clear()
+                                    bests.add(nextGuess)
+                                }
+                                this == minLong -> bests.add(nextGuess)
+                            }
+
+                        }
+                    } else {
+                        map {
+                            it * it
+                        }.reduce { a, b -> a + b }.apply {
+                            //info { "$this $min $nextGuess" }
+
+                            when {
+                                this < min -> {
+                                    min = this
+                                    bests.clear()
+                                    bests.add(nextGuess)
+                                }
+                                this == min -> bests.add(nextGuess)
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            //return the first element which may lead to most kinds of result
+            return bests[0]
+        }
+
+        /**This method count non-zero classes instead of summing square of number in each class as
+         * our Discrete Degree
+         *
+         *
+         * */
+        fun betterGuess(candidateList: List<Int>): Int {
+
+            var max = 0
             val bests = mutableListOf<Int>()
 
             candidateList.forEach { nextGuess ->
@@ -216,21 +314,17 @@ class MainFragment : Fragment(), AnkoLogger {
 
                     }
 
-                    //info {distributedMap}
+                }.values.filter { it > 0 }.size.apply {
+                    //info { "$this $max $nextGuess" }
 
-                }.values.map { it * it }.reduce{a, b -> a+b}.apply {
-                    info { "$this $min $nextGuess" }
-
-                    when{
-                        this < min -> {
-                            min = this
+                    when {
+                        this > max -> {
+                            max = this
                             bests.clear()
                             bests.add(nextGuess)
                         }
-                        this == min -> bests.add(nextGuess)
+                        this == max -> bests.add(nextGuess)
                     }
-
-                    //info{ bests }
 
                 }
             }
@@ -458,7 +552,11 @@ class MainFragment : Fragment(), AnkoLogger {
                     info { candidateList }
 
                     guessList = if (BETTER_GUESS_WHEN_INT) {
-                        betterGuess(candidateList)
+                        if(INTENSIVE){
+                            betterGuessIntensive(candidateList)
+                        } else {
+                            betterGuess(candidateList)
+                        }
                     } else {
                         candidateList[0]
                     }.toList()
@@ -492,56 +590,6 @@ class MainFragment : Fragment(), AnkoLogger {
 
         runOnUiThread {
             button_main_start.isEnabled = true
-        }
-
-    }
-
-
-    class GameServer(private val digitCount: Int, outputter: (String) -> Unit) {
-
-        private val mutableList = mutableListOf<Int>()
-        var count = 0
-            private set
-
-        init {
-
-            //shorter, but it's O(n^2)
-            //(1..9).shuffled().subList(0, digitCount)
-
-            //faster when the list is huge
-            val pool = (0..9).toMutableList()
-            for (i in 0 until digitCount) {
-                Random().nextInt(pool.size).apply {
-                    mutableList.add(pool[this])
-                    pool.removeAt(this)
-                }
-
-            }
-
-            StringBuilder().apply {
-                append("THE Number = ")
-                mutableList.forEach {
-                    append(it)
-                }
-
-                outputter(toString())
-            }
-
-        }
-
-        fun guess(list: List<Int>): Pair<Int, Int> {
-            count++
-            var a = 0
-            var b = 0
-
-            list.forEachIndexed { index, it ->
-                when {
-                    mutableList[index] == it -> a++
-                    mutableList.contains(it) -> b++
-                }
-            }
-
-            return Pair(a, b)
         }
 
     }
