@@ -7,7 +7,7 @@ import java.util.*
  */
 
 
-class GameServer(private val digitCount: Int, outputter: (String) -> Unit) {
+class GameServer(private val digitCount: Int, out: (String) -> Unit) {
 
     private val mutableList = mutableListOf<Int>()
     var count = 0
@@ -34,7 +34,7 @@ class GameServer(private val digitCount: Int, outputter: (String) -> Unit) {
                 append(it)
             }
 
-            outputter(toString())
+            out(toString())
         }
 
     }
