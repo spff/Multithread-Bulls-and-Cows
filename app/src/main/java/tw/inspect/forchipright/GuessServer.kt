@@ -12,9 +12,19 @@ import java.util.*
 
 class GuessServer(private val gameServer: AbsGameServer,
                   private val digitCount: Int,
+                  private val multiThreadWhenLong: MultiThreadWhenLong,
+                  private val betterGuessWhenInt: BetterGuessWhenInt,
                   private val out: (String) -> Unit,
                   private val guessFinish: () -> Unit) : AnkoLogger {
 
+    enum class BetterGuessWhenInt {
+        OFF, NORMAL, INTENSIVE
+    }
+
+
+    enum class MultiThreadWhenLong {
+        OFF, ON
+    }
 
     /**
      * 1. Start GameServer
@@ -473,14 +483,10 @@ class GuessServer(private val gameServer: AbsGameServer,
 
                     info { candidateList }
 
-                    guessList = if (BETTER_GUESS_WHEN_INT) {
-                        if (INTENSIVE) {
-                            betterGuessIntensive(candidateList)
-                        } else {
-                            betterGuess(candidateList)
-                        }
-                    } else {
-                        candidateList[0]
+                    guessList = when (betterGuessWhenInt) {
+                        BetterGuessWhenInt.OFF -> candidateList[0]
+                        BetterGuessWhenInt.NORMAL -> betterGuess(candidateList)
+                        BetterGuessWhenInt.INTENSIVE -> betterGuessIntensive(candidateList)
                     }.toList()
                 }
 
@@ -491,7 +497,7 @@ class GuessServer(private val gameServer: AbsGameServer,
         }
 
         if (digitCount > 8) {
-            if (MULTI_THREAD_WHEN_LONG) {
+            if (multiThreadWhenLong == MultiThreadWhenLong.ON) {
                 guessNumberLongMulti()
             } else {
                 guessNumberLong()

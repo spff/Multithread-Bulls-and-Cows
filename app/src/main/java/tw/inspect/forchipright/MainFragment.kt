@@ -16,9 +16,6 @@ import org.jetbrains.anko.runOnUiThread
 
 
 const val POOL_SIZE = 10
-const val MULTI_THREAD_WHEN_LONG = true
-const val BETTER_GUESS_WHEN_INT = true
-const val INTENSIVE = true
 
 class MainFragment : Fragment(), AnkoLogger {
 
@@ -66,7 +63,13 @@ class MainFragment : Fragment(), AnkoLogger {
                         radio_group_main_digits.checkedRadioButtonId
                 ).tag as Int + 1).also {
 
-                    GuessServer(GameServer(it, ::out),it, ::out, ::guessFinish).startJob()
+                    GuessServer(GameServer(it, ::out),
+                            it,
+                            GuessServer.MultiThreadWhenLong.ON,
+                            GuessServer.BetterGuessWhenInt.INTENSIVE,
+                            ::out,
+                            ::guessFinish
+                    ).startJob()
 
                 }
 

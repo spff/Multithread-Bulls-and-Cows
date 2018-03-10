@@ -1,4 +1,4 @@
-#Sat Mar 10 19:06:46 CST 2018
+#Sun Mar 11 02:54:10 CST 2018
 base.0=C\:\\Users\\spff\\AndroidStudioProjects\\ForChipRight\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
 path.0=classes.dex
 renamed.0=classes.dex
