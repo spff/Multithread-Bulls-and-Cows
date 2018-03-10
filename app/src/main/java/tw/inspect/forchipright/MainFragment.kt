@@ -62,8 +62,9 @@ class MainFragment : Fragment(), AnkoLogger {
             text_view_main_output.text = ""
             Thread {
 
-                view!!.findViewById<RadioButton>(
-                        radio_group_main_digits.checkedRadioButtonId).tag as Int + 1.also {
+                (view!!.findViewById<RadioButton>(
+                        radio_group_main_digits.checkedRadioButtonId
+                ).tag as Int + 1).also {
 
                     GuessServer(GameServer(it, ::out),it, ::out, ::guessFinish).startJob()
 
