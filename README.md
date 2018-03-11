@@ -97,6 +97,6 @@ auto solve
  By running the Benchmark.java in the unit test, If we first guess 0123
  
  with all of the 5040 secrets(4 digits)
- we can guess the secret with 1~8times
+ we can guess the secret with 1~8times  
  [ 1 13 109 645 2055 1923 291 3 ]
  
