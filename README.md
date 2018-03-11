@@ -27,7 +27,7 @@ auto solve
 
 
 
- Beside just choose the first from the candidateList, we calculate the Discrete Degree  
+ Beside choosing the first from the candidateList, we calculate the Discrete Degree  
  of each candidate in the candidateList.  
 
  Take digits = 3 for example, every choice may get 0A0B 0A1B 0A2B 0A3B 1A0B 1A1B 1A2B 2A0B  
@@ -91,4 +91,12 @@ auto solve
  ### What if the value calculated the same
 
  Just pick the first, maybe we can do some calculate recursively, but not for now.
+ 
+ ### Result
+ 
+ By running the Benchmark.java in the unit test, If we first guess 0123
+ 
+ with all of the 5040 secrets(4 digits)
+ we can guess the secret with 1~8times
+ [ 1 13 109 645 2055 1923 291 3 ]
  
