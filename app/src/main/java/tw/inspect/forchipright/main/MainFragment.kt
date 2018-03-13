@@ -151,7 +151,6 @@ class MainFragment : Fragment(), AnkoLogger {
     private fun guessFinish() {
         runOnUiThread {
             info { "nono hihi" }
-            guessServer = null
             button_main_start.isEnabled = true
         }
     }

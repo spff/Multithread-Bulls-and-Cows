@@ -46,6 +46,7 @@ class GuessServer(private val gameServer: AbsGameServer,
         threadSafeGuessFinish = {
             synchronized(lock, {
                 guessFinishCallBack()
+                finished = true
             })
         }
     }
