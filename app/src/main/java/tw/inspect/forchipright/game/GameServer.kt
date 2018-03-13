@@ -1,4 +1,4 @@
-package tw.inspect.forchipright
+package tw.inspect.forchipright.game
 
 import java.util.*
 
@@ -7,7 +7,7 @@ import java.util.*
  */
 
 
-class GameServer(private val digitCount: Int, private val out: (String) -> Unit):AbsGameServer(digitCount) {
+class GameServer(private val digitCount: Int) : AbsGameServer(digitCount) {
 
     override val secret = mutableListOf<Int>()
 
@@ -30,14 +30,6 @@ class GameServer(private val digitCount: Int, private val out: (String) -> Unit)
 
         }
 
-        StringBuilder().apply {
-            append("THE Number = ")
-            secret.forEach {
-                append(it)
-            }
-
-            out(toString())
-        }
 
     }
 

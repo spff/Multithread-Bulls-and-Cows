@@ -1,8 +1,9 @@
-package tw.inspect.forchipright
+package tw.inspect.forchipright.game
 
 import android.os.SystemClock.elapsedRealtime
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
+import tw.inspect.forchipright.main.POOL_SIZE
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -14,8 +15,8 @@ class GuessServer(private val gameServer: AbsGameServer,
                   private val digitCount: Int,
                   private val multiThreadWhenLong: MultiThreadWhenLong,
                   private val betterGuessWhenInt: BetterGuessWhenInt,
-                  private val out: (String) -> Unit,
-                  private val guessFinish: () -> Unit) : AnkoLogger {
+                  var outCallBack: (String) -> Unit,
+                  private var guessFinishCallBack: () -> Unit) : AnkoLogger {
 
     enum class BetterGuessWhenInt {
         OFF, NORMAL, INTENSIVE
@@ -25,6 +26,46 @@ class GuessServer(private val gameServer: AbsGameServer,
     enum class MultiThreadWhenLong {
         OFF, ON
     }
+
+
+    private val lock = Any()
+
+    private var buffer: String = ""
+    private var finished = false
+
+    private val threadSafeOut: (String) -> Unit
+    private val threadSafeGuessFinish: () -> Unit
+
+    init {
+        threadSafeOut = {
+            synchronized(lock, {
+                buffer += it + "\n"
+                outCallBack(it)
+            })
+        }
+        threadSafeGuessFinish = {
+            synchronized(lock, {
+                guessFinishCallBack()
+            })
+        }
+    }
+
+
+    fun threadSafeLeave() {
+        synchronized(lock, {
+            outCallBack = {}
+            guessFinishCallBack = {}
+        })
+    }
+
+    fun threadSafeReconnect(newOut: (String) -> Unit, newGuessFinish: () -> Unit): Pair<String, Boolean> {
+        synchronized(lock, {
+            outCallBack = newOut
+            guessFinishCallBack = newGuessFinish
+            return Pair(buffer, finished)
+        })
+    }
+
 
     /**
      * 1. Start GameServer
@@ -271,7 +312,7 @@ class GuessServer(private val gameServer: AbsGameServer,
 
 
 
-        out("start time: ${simpleDateFormat.format(overallStart)}")
+        threadSafeOut("start time: ${simpleDateFormat.format(overallStart)}")
         var perEachStart = elapsedRealtime()
 
 
@@ -309,7 +350,7 @@ class GuessServer(private val gameServer: AbsGameServer,
             while (true) {
                 val pair = gameServer.guess(guessList)
 
-                out(StringBuilder().apply {
+                threadSafeOut(StringBuilder().apply {
                     append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
@@ -392,7 +433,7 @@ class GuessServer(private val gameServer: AbsGameServer,
             while (true) {
                 val pair = gameServer.guess(guessList)
 
-                out(StringBuilder().apply {
+                threadSafeOut(StringBuilder().apply {
                     append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
@@ -457,7 +498,7 @@ class GuessServer(private val gameServer: AbsGameServer,
             while (true) {
                 val pair = gameServer.guess(guessList)
 
-                out(StringBuilder().apply {
+                threadSafeOut(StringBuilder().apply {
                     append("guess: ${guessList.map { it.toString() }.reduce { a, b -> a + b }}, ")
                     append("result: ${pair.first}A${pair.second}B, spent: ")
                     append("${(elapsedRealtime() - perEachStart) / 1000.0} sec")
@@ -506,7 +547,7 @@ class GuessServer(private val gameServer: AbsGameServer,
             guessNumber()
         }
         val overallStop = GregorianCalendar().timeInMillis
-        out(StringBuilder().apply {
+        threadSafeOut(StringBuilder().apply {
             append("guess ${gameServer.count} time${if (gameServer.count > 1) {
                 "s"
             } else {
@@ -516,7 +557,7 @@ class GuessServer(private val gameServer: AbsGameServer,
             append("end time : ${simpleDateFormat.format(overallStop)}")
         }.toString())
 
-        guessFinish()
+        threadSafeGuessFinish()
 
 
     }

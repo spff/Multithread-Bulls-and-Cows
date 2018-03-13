@@ -1,4 +1,4 @@
-package tw.inspect.forchipright
+package tw.inspect.forchipright.game
 
 /**
  * Created by spff on 3/10/2018.
@@ -7,7 +7,8 @@ package tw.inspect.forchipright
 
 abstract class AbsGameServer(private val digitCount: Int) {
 
-    protected open val secret = mutableListOf<Int>()
+    open val secret = mutableListOf<Int>()
+
     var count = 0
         private set
 

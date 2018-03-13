@@ -1,4 +1,4 @@
-package tw.inspect.forchipright
+package tw.inspect.forchipright.main
 
 import android.app.Fragment
 import android.graphics.Color
@@ -13,11 +13,23 @@ import kotlinx.android.synthetic.main.fragment_main.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.runOnUiThread
+import tw.inspect.forchipright.R
+import tw.inspect.forchipright.game.GameServer
+import tw.inspect.forchipright.game.GuessServer
 
 
 const val POOL_SIZE = 10
 
 class MainFragment : Fragment(), AnkoLogger {
+
+    companion object {
+        const val DIGITS = "DIGITS"
+
+        var guessServer: GuessServer? = null
+        var gameServer: GameServer? = null
+        var secretString = ""
+    }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -49,43 +61,79 @@ class MainFragment : Fragment(), AnkoLogger {
                 })
             }
 
-            check(getChildAt(savedInstanceState?.get("digits") as Int? ?: 0).id)
+            check(getChildAt(savedInstanceState?.getInt(DIGITS) ?: 0).id)
 
         }
 
 
-        button_main_start.setOnClickListener({
-            it.isEnabled = false
-            text_view_main_output.text = ""
-            Thread {
+        button_main_start.apply {
+            setOnClickListener({
+                it.isEnabled = false
+                text_view_main_output.text = ""
+
+
 
                 (view!!.findViewById<RadioButton>(
                         radio_group_main_digits.checkedRadioButtonId
                 ).tag as Int + 1).also {
+                    gameServer = GameServer(it)
 
-                    GuessServer(GameServer(it, ::out),
+                    StringBuilder().apply {
+                        append("Secret = ")
+                        (gameServer as GameServer).secret.forEach {
+                            append(it)
+                        }
+                        append("\n")
+                        secretString = toString()
+                        text_view_main_output.text = secretString
+                    }
+
+                    guessServer = GuessServer(GameServer(it),
                             it,
                             GuessServer.MultiThreadWhenLong.ON,
                             GuessServer.BetterGuessWhenInt.INTENSIVE,
                             ::out,
                             ::guessFinish
-                    ).startJob()
+                    )
+                    info { guessServer }
 
                 }
 
+                Thread {
+                    guessServer!!.startJob()
 
-            }.start()
+                }.start()
 
 
-        })
+            })
+
+        }
 
         text_view_main_output.movementMethod = ScrollingMovementMethod()
+
+        savedInstanceState?.apply {
+
+            guessServer?.apply {
+                text_view_main_output.text = secretString
+                threadSafeReconnect(::out, ::guessFinish).apply {
+                    text_view_main_output.append(first)
+                    button_main_start.isEnabled = second
+                }
+            }
+        }
+
 
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
-        outState!!.putInt("digits", view!!.findViewById<RadioButton>(
-                radio_group_main_digits.checkedRadioButtonId).tag as Int)
+        info { guessServer }
+        guessServer?.threadSafeLeave()
+
+        outState!!.apply {
+
+            putInt(DIGITS, view!!.findViewById<RadioButton>(
+                    radio_group_main_digits.checkedRadioButtonId).tag as Int)
+        }
         super.onSaveInstanceState(outState)
 
     }
@@ -102,8 +150,11 @@ class MainFragment : Fragment(), AnkoLogger {
 
     private fun guessFinish() {
         runOnUiThread {
+            info { "nono hihi" }
+            guessServer = null
             button_main_start.isEnabled = true
         }
     }
+
 
 }

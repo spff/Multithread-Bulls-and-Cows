@@ -3,10 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="tw.inspect.forchipright.MainActivity">
+    tools:context="tw.inspect.forchipright.main.MainActivity">
 
     <FrameLayout
         android:id="@+id/for_fragment_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/text_view_main_test"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        android:textSize="40sp"
+        android:textColor="@android:color/holo_blue_bright"/>
+
 </android.support.constraint.ConstraintLayout>

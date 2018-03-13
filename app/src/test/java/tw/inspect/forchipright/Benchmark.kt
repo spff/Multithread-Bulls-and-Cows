@@ -4,6 +4,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import tw.inspect.forchipright.game.AbsGameServer
+import tw.inspect.forchipright.game.GuessServer
+import tw.inspect.forchipright.main.POOL_SIZE
 import kotlin.math.ceil
 import kotlin.math.min
 
