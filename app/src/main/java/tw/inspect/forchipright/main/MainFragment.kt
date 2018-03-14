@@ -39,7 +39,6 @@ class MainFragment : Fragment(), AnkoLogger {
     override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         radio_group_main_digits.apply {
             for (i in 0 until POOL_SIZE) {
                 addView(RadioButton(context).apply {

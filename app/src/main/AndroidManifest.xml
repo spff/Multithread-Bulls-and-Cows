@@ -21,9 +21,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".service.MyService"
-            android:exported="false"/>
     </application>
 
 </manifest>
