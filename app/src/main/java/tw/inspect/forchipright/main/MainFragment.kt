@@ -110,23 +110,29 @@ class MainFragment : Fragment(), AnkoLogger {
 
         text_view_main_output.movementMethod = ScrollingMovementMethod()
 
-        savedInstanceState?.apply {
 
-            guessServer?.apply {
-                text_view_main_output.text = secretString
-                threadSafeReconnect(::out, ::guessFinish).apply {
-                    text_view_main_output.append(first)
-                    button_main_start.isEnabled = second
-                }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        guessServer?.apply {
+            text_view_main_output.text = secretString
+            threadSafeReconnect(::out, ::guessFinish).apply {
+                text_view_main_output.append(first)
+                button_main_start.isEnabled = second
             }
         }
 
+    }
+
+    override fun onPause() {
+        super.onPause()
+        guessServer?.threadSafeLeave()
 
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
-        info { guessServer }
-        guessServer?.threadSafeLeave()
 
         outState!!.apply {
 
@@ -149,7 +155,6 @@ class MainFragment : Fragment(), AnkoLogger {
 
     private fun guessFinish() {
         runOnUiThread {
-            info { "nono hihi" }
             button_main_start.isEnabled = true
         }
     }
