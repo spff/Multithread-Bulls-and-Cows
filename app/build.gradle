@@ -7,7 +7,7 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "tw.inspect.forchipright"
+        applicationId "tw.inspect.bullandcows"
         minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
