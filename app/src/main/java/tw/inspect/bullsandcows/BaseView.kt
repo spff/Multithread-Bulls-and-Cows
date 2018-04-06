@@ -1,4 +1,4 @@
-package tw.inspect.forchipright
+package tw.inspect.bullsandcows
 
 interface BaseView<T> {
 

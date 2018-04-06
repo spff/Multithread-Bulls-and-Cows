@@ -1,9 +1,9 @@
-package tw.inspect.forchipright.main
+package tw.inspect.bullsandcows.main
 
 import android.app.Activity
 import android.os.Bundle
 import org.jetbrains.anko.AnkoLogger
-import tw.inspect.forchipright.R
+import tw.inspect.bullsandcows.R
 
 
 class MainActivity : Activity(), AnkoLogger {

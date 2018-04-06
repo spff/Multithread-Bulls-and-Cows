@@ -1,4 +1,4 @@
-package tw.inspect.forchipright.game
+package tw.inspect.bullsandcows.game
 
 /**
  * Created by spff on 3/10/2018.

@@ -1,4 +1,4 @@
-package tw.inspect.forchipright.main
+package tw.inspect.bullsandcows.main
 
 import android.app.Fragment
 import android.graphics.Color
@@ -13,9 +13,11 @@ import kotlinx.android.synthetic.main.fragment_main.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.runOnUiThread
-import tw.inspect.forchipright.R
-import tw.inspect.forchipright.game.GameServer
-import tw.inspect.forchipright.game.GuessServer
+import tw.inspect.bullsandcows.game.GameServer
+import tw.inspect.bullsandcows.game.GuessServer
+import tw.inspect.bullsandcows.R
+
+
 
 
 const val POOL_SIZE = 10

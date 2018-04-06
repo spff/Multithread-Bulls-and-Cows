@@ -1,4 +1,4 @@
-package tw.inspect.forchipright.game
+package tw.inspect.bullsandcows.game
 
 import java.util.*
 

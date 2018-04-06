@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/ForChipRight.iml" filepath="$PROJECT_DIR$/ForChipRight.iml" />
+      <module fileurl="file://$PROJECT_DIR$/MultithreadBullsAndCows.iml" filepath="$PROJECT_DIR$/MultithreadBullsAndCows.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

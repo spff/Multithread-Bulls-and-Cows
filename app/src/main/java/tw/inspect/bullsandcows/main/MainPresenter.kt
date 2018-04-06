@@ -1,4 +1,4 @@
-package tw.inspect.forchipright.main
+package tw.inspect.bullsandcows.main
 
 /**
  * Created by spff on 3/13/2018.

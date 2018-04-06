@@ -1,7 +1,7 @@
-package tw.inspect.forchipright.main
+package tw.inspect.bullsandcows.main
 
-import tw.inspect.forchipright.BasePresenter
-import tw.inspect.forchipright.BaseView
+import tw.inspect.bullsandcows.BasePresenter
+import tw.inspect.bullsandcows.BaseView
 
 /**
  * Created by spff on 3/13/2018.

@@ -1,9 +1,9 @@
-package tw.inspect.forchipright.game
+package tw.inspect.bullsandcows.game
 
 import android.os.SystemClock.elapsedRealtime
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
-import tw.inspect.forchipright.main.POOL_SIZE
+import tw.inspect.bullsandcows.main.POOL_SIZE
 import java.text.SimpleDateFormat
 import java.util.*
 
