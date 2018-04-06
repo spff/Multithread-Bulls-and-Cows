@@ -13,9 +13,9 @@ import kotlinx.android.synthetic.main.fragment_main.*
 import org.jetbrains.anko.AnkoLogger
 import org.jetbrains.anko.info
 import org.jetbrains.anko.runOnUiThread
+import tw.inspect.bullsandcows.R
 import tw.inspect.bullsandcows.game.GameServer
 import tw.inspect.bullsandcows.game.GuessServer
-import tw.inspect.bullsandcows.R
 
 
 
@@ -89,7 +89,7 @@ class MainFragment : Fragment(), AnkoLogger {
                         text_view_main_output.text = secretString
                     }
 
-                    guessServer = GuessServer(GameServer(it),
+                    guessServer = GuessServer(gameServer as GameServer,
                             it,
                             GuessServer.MultiThreadWhenLong.ON,
                             GuessServer.BetterGuessWhenInt.INTENSIVE,
