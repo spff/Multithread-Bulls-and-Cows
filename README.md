@@ -1,4 +1,4 @@
-# Multithread-Bulls-and-Cows
+# multithread-bulls-and-cows
 
 auto solve, need at most 8 times to guess the secret with (digit=4 and the first guess=0123)
 
